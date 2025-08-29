@@ -20,6 +20,9 @@ on:
         required: true
         default: '21'
 
+permissions:
+  contents: write
+
 jobs:
   setup:
     runs-on: windows-latest
