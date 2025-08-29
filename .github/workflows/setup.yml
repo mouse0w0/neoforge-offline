@@ -1,0 +1,64 @@
+name: Setup MDK
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: '名字'
+        required: true
+      repo_url:
+        description: '仓库'
+        required: true
+      branch:
+        description: '分支'
+        required: false
+        default: 'main'
+      commit_sha:
+        description: 'Commit'
+        required: true
+      java_version:
+        description: 'Java 版本'
+        required: true
+        default: '21'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repository
+        run: |
+          git clone ${{ github.event.inputs.repo_url }} ${{ github.event.inputs.name }}
+          cd ${{ github.event.inputs.name }}
+          git checkout ${{ github.event.inputs.branch }}
+          git checkout ${{ github.event.inputs.commit_sha }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ github.event.inputs.java_version }}
+
+      - name: Execute Gradle setup
+        working-directory: ${{ github.event.inputs.name }}
+        run: ./gradlew setup
+
+      - name: Prepare setup artifacts
+        run: |
+          mkdir -p output
+          cd repo
+          zip -r ../output/${{ github.event.inputs.name }}.zip .gradle ${{ github.event.inputs.name }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.event.inputs.name }}
+          tag_name: ${{ github.event.inputs.name }}
+          body: |
+            name=${{ github.event.inputs.name }}
+            repo_url=${{ github.event.inputs.repo_url }}
+            branch=${{ github.event.inputs.branch }}
+            commit_sha=${{ github.event.inputs.commit_sha }}
+            java_version=${{ github.event.inputs.java_version }}
+          files: output/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
