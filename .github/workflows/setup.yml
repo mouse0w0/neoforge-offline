@@ -12,10 +12,9 @@ on:
       branch:
         description: '分支'
         required: false
-        default: 'main'
       commit_sha:
         description: 'Commit'
-        required: true
+        required: false
       java_version:
         description: 'Java 版本'
         required: true
@@ -32,8 +31,12 @@ jobs:
         run: |
           git clone ${{ github.event.inputs.repo_url }} ${{ github.event.inputs.name }}
           cd ${{ github.event.inputs.name }}
-          git checkout ${{ github.event.inputs.branch }}
-          git checkout ${{ github.event.inputs.commit_sha }}
+          if ("${{ github.event.inputs.branch }}" -ne "") {
+            git checkout ${{ github.event.inputs.branch }}
+          }
+          if ("${{ github.event.inputs.commit_sha }}" -ne "") {
+            git checkout ${{ github.event.inputs.commit_sha }}
+          }
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -41,9 +44,9 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ github.event.inputs.java_version }}
 
-      - name: Execute Gradle Commands
+      - name: Execute Gradle Tasks
         working-directory: ${{ github.event.inputs.name }}
-        run: ./gradlew genIntellijRuns genEclipseRuns genVSCodeRuns prepareRunClient prepareRunServer prepareRunData
+        run: ./gradlew idePostSync ideBeforeRun
 
       - name: Prepare Archive
         run: |
