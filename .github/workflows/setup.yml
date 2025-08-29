@@ -27,6 +27,13 @@ jobs:
       run:
         shell: pwsh
     steps:
+      - name: Print Inputs
+        run: |
+          Write-Output "name=${{ github.event.inputs.name }}"
+          Write-Output "repo_url=${{ github.event.inputs.repo_url }}"
+          Write-Output "branch=${{ github.event.inputs.branch }}"
+          Write-Output "commit_sha=${{ github.event.inputs.commit_sha }}"
+          Write-Output "java_version=${{ github.event.inputs.java_version }}"
       - name: Checkout Repository
         run: |
           git clone ${{ github.event.inputs.repo_url }} ${{ github.event.inputs.name }}
@@ -46,7 +53,7 @@ jobs:
 
       - name: Execute Gradle Tasks
         working-directory: ${{ github.event.inputs.name }}
-        run: ./gradlew idePostSync ideBeforeRun
+        run: ./gradlew idePostSync
 
       - name: Prepare Archive
         run: |
