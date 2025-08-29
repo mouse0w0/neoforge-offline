@@ -53,7 +53,7 @@ jobs:
 
       - name: Execute Gradle Tasks
         working-directory: ${{ github.event.inputs.name }}
-        run: ./gradlew idePostSync
+        run: ./gradlew idePostSync --no-daemon
 
       - name: Prepare Archive
         run: |
