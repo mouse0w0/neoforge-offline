@@ -22,10 +22,13 @@ on:
         default: '21'
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  setup:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
     steps:
-      - name: Checkout target repository
+      - name: Checkout Repository
         run: |
           git clone ${{ github.event.inputs.repo_url }} ${{ github.event.inputs.name }}
           cd ${{ github.event.inputs.name }}
@@ -38,15 +41,14 @@ jobs:
           distribution: 'temurin'
           java-version: ${{ github.event.inputs.java_version }}
 
-      - name: Execute Gradle setup
+      - name: Execute Gradle Commands
         working-directory: ${{ github.event.inputs.name }}
-        run: ./gradlew setup
+        run: ./gradlew genIntellijRuns genEclipseRuns genVSCodeRuns prepareRunClient prepareRunServer prepareRunData
 
-      - name: Prepare setup artifacts
+      - name: Prepare Archive
         run: |
-          mkdir -p output
-          cd repo
-          zip -r ../output/${{ github.event.inputs.name }}.zip .gradle ${{ github.event.inputs.name }}
+          New-Item -ItemType Directory -Force -Path output | Out-Null
+          Compress-Archive -Path "~\.gradle", "${{ github.event.inputs.name }}" -DestinationPath "output\${{ github.event.inputs.name }}.zip" -Force
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
