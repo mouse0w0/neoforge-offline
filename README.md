@@ -1,1 +1,1 @@
-# neoforge-offline
+# neoforge-mdk-offline
